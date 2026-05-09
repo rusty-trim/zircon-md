@@ -1,4 +1,4 @@
-import { Folder, Note } from "@/types";
+import { Folder, FolderPayload, Note, NotePayload, Root } from "@/types";
 import { createSlice } from "@reduxjs/toolkit";
 
 const rootSlice = createSlice({
@@ -9,19 +9,45 @@ const rootSlice = createSlice({
         noteIds: [] as string[],
         folderIds: [] as string[],
         size: 0,
-    },
+    } as Root,
     reducers: {
         addNote: (state, action) => {
-            const note = action.payload;
+            const payload: NotePayload = action.payload;
+            const note = payload.note;
+
+            if (payload.folder) {
+                if (state.folders[payload.folder.id]) {
+                    state.folders[payload.folder.id].noteIds.push(note.id);
+                    state.folders[payload.folder.id].updatedAt = Date.now();
+                } else {
+                    console.warn("Folder not found for note:", payload.folder.id);
+                    return;
+                }
+            } else {
+                state.noteIds.push(note.id);
+            }
+
             state.notes[note.id] = note;
-            state.noteIds.push(note.id);
             state.size++;
             console.log("Note Added:", note);
         },
         addFolder: (state, action) => {
-            const folder = action.payload;
+            const payload: FolderPayload = action.payload;
+            const folder = payload.folder;
+
+            if (payload.parentFolder) {
+                if (state.folders[payload.parentFolder.id]) {
+                    state.folders[payload.parentFolder.id].folderIds.push(folder.id);
+                    state.folders[payload.parentFolder.id].updatedAt = Date.now();
+                } else {
+                    console.warn("Parent folder not found for folder:", payload.parentFolder.id);
+                    return;
+                }
+            } else {
+                state.folderIds.push(folder.id);
+            }
+
             state.folders[folder.id] = folder;
-            state.folderIds.push(folder.id);
             console.log("Folder Added:", folder);
         },
         deleteNote: (state, action) => { },

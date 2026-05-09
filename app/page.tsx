@@ -3,6 +3,7 @@ import AppSidebar from "@/components/app-sidebar"
 import { Button } from "@/components/ui/button"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { handleCreateNote, handleUpdateNote } from "@/lib/note"
+import { updateNote } from "@/slices/rootSlice"
 import { Note, Root } from "@/types"
 import { FileText, Plus } from "lucide-react"
 import { useEffect } from "react"
@@ -21,26 +22,12 @@ export default function Page() {
     console.log("Root State:", root);
   }, [root]);
 
+  // TODO: Create an obsidian like editor with markdown support, and live preview.
   function handleInput(event: React.KeyboardEvent<HTMLDivElement>) {
-    if (selectedNote == null) return;
-
-    if (event.key === "Enter") {
-      event?.preventDefault();
-      const newBlock = document.createElement("div");
-      newBlock.className = "block";
-      newBlock.innerHTML = "<br>"; // Add a line break for the new block
-      event.currentTarget.appendChild(newBlock);
-
-      // Move the cursor to the new block
-      const range = document.createRange();
-      range.setStart(newBlock, 0);
-      range.collapse(true);
-      const sel = window.getSelection();
-      sel?.removeAllRanges();
-      sel?.addRange(range);
-    } else if (event.key === "Backspace") {
-      // TODO: Handle backspace to delete blocks and update note content accordingly
-    }
+    updateNote({
+      ...selectedNote,
+      content: event.currentTarget.innerHTML
+    } as Note);
   }
 
   return (
@@ -68,8 +55,8 @@ export default function Page() {
               <div className="p-2 flex items-center bg-sidebar border-b">
                 <input
                   type="text"
-                  defaultValue={selectedNote.title}
-                  onBlur={(e) => {
+                  value={selectedNote.title}
+                  onChange={(e) => {
                     const updatedTitle = e.target.value;
                     handleUpdateNote(selectedNote, { title: updatedTitle }, dispatch);
                   }}
@@ -84,7 +71,6 @@ export default function Page() {
               </div>
               {/* Note Editor */}
               <div contentEditable onKeyDown={handleInput} className="flex flex-col flex-1 p-4 focus:outline-none" suppressContentEditableWarning={true}>
-                <div className="block"><br /></div>
               </div>
             </div>
           )}

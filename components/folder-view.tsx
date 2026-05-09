@@ -1,27 +1,16 @@
-import { Root } from "@/types";
+import { Root, Store } from "@/types";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import TreeEntry from "./tree-entry";
 
 export default function FolderView({ folderId }: { folderId: string }) {
-    const [expanded, setExpanded] = useState(false);
-    const folder = useSelector((state: Root) => state.folders[folderId]);
-    const notes = useSelector((state: Root) => state.notes);
+    const folders = useSelector((store: Store) => store.root.folders);
+    const folder = useSelector((store: Store) => store.root.folders[folderId]);
+    const notes = useSelector((store: Store) => store.root.notes);
 
     return (
-        <div>
-            <button className="text-left hover:text-primary/90 hover:bg-secondary p-1 rounded-md transition-colors" onClick={() => setExpanded(!expanded)}>
-                {folder.name}
-            </button>
-
-            {folder.folderIds.map((subFolderId) => (
-                <FolderView key={subFolderId} folderId={subFolderId} />
-            ))}
-
-            {expanded && folder.noteIds.map((noteId) => (
-                <button key={noteId} className="text-left hover:text-primary/90 hover:bg-secondary p-1 rounded-md transition-colors">
-                    {notes[noteId].title}
-                </button>
-            ))}
-        </div>
+        <>
+            <TreeEntry entry={folder} level={1} children={[...folder.folderIds.map((id) => folders[id]), ...folder.noteIds.map((id) => notes[id])]} />
+        </>
     );
 }
