@@ -4,18 +4,16 @@ import { XIcon } from "lucide-react";
 
 function EditorTab(props: Tab) {
   const tabStore = useTabStore();
-  const tabIsActive = tabStore.activeTab === props.id;
-
-  console.log(tabIsActive);
+  const tabIsActive = tabStore.activeTab.id === props.id;
 
   return (
     <div
       className={cn(
-        "text-xs h-full flex items-center hover:bg-muted gap-2 p-2 group rounded-t-md",
+        "text-xs h-full flex items-center hover:bg-muted gap-2 p-2 group rounded-t-md transition-colors",
         tabIsActive ? "bg-input" : "",
       )}
       onClick={() => {
-        tabStore.setActiveTab(props.id);
+        tabStore.setActiveTab(props);
       }}
     >
       <span className="">{props.name}</span>
