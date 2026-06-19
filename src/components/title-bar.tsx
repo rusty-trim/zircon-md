@@ -50,20 +50,21 @@ function TitleBar() {
       </div>
       <div
         data-tauri-drag-region
-        className="flex grow items-center h-full overflow-x-auto shrink-0"
+        className="flex-1 min-w-0 flex items-center h-full overflow-hidden gap-2"
       >
-        {/* rusty_tuff_asl.txt */}
-        {tabStore.tabs.map((tab) => (
-          <EditorTab {...tab} key={tab.id} />
-        ))}
-        <button
-          className="p-3 hover:bg-muted transition-colors"
-          onClick={() => tabStore.addNewTab()}
-        >
-          <PlusIcon size={16} />
-        </button>
+        <div className="flex min-w-0 flex-1 items-center">
+          {tabStore.tabs.map((tab) => (
+            <EditorTab {...tab} key={tab.id} />
+          ))}
+          <button
+            className="p-3 hover:bg-muted transition-colors"
+            onClick={() => tabStore.addNewTab()}
+          >
+            <PlusIcon size={16} />
+          </button>
+        </div>
       </div>
-      <div data-tauri-drag-region className="flex items-center">
+      <div data-tauri-drag-region className="flex shrink-0 items-center">
         <button
           className="p-3 hover:bg-muted transition-colors"
           onClick={handleMinimize}
@@ -88,4 +89,3 @@ function TitleBar() {
 }
 
 export { TitleBar };
-

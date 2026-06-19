@@ -9,7 +9,7 @@ function EditorTab(props: Tab) {
   return (
     <div
       className={cn(
-        "text-xs h-full flex items-center hover:bg-muted gap-2 p-2 group rounded-t-md transition-colors",
+        "text-xs h-full flex items-center justify-between hover:bg-muted gap-2 p-2 group rounded-t-md transition-colors min-w-20 max-w-50 truncate flex-1 shrink overflow-hidden",
         tabIsActive ? "bg-input" : "",
       )}
       onClick={() => {
