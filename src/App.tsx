@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { ThemeProvider } from "./components/theme-provider";
 import { TitleBar } from "./components/title-bar";
 import { Sidebar } from "./components/ui/sidebar";
+import { Editor } from "./components/ui/editor";
 
 function App() {
   // async function greet() {
@@ -11,10 +12,12 @@ function App() {
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="flex flex-col w-full h-full">
+      <div className="grainy flex flex-col w-full h-full">
         <TitleBar />
         <div className="flex grow">
           <Sidebar />
+          {/* <div>test</div> */}
+          <Editor />
         </div>
       </div>
     </ThemeProvider>
