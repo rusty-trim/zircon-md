@@ -15,6 +15,12 @@ function EditorTab(props: Tab) {
       onClick={() => {
         tabStore.setActiveTab(props);
       }}
+      onAuxClick={(event) => {
+        if (event.button == 1) {
+          event.preventDefault();
+          tabStore.removeTab(props.id);
+        }
+      }}
     >
       <span className="">{props.name}</span>
       <button
