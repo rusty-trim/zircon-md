@@ -3,22 +3,26 @@ import { Tab, useTabStore } from "@/stores/tabStore";
 import { XIcon } from "lucide-react";
 
 function EditorTab(props: Tab) {
-  const tabStore = useTabStore();
-  const tabIsActive = tabStore.activeTab.id === props.id;
+  const { activeTab, setActiveTab, removeTab } = useTabStore((store) => ({
+    activeTab: store.activeTab,
+    setActiveTab: store.setActiveTab,
+    removeTab: store.removeTab,
+  }));
+  const tabIsActive = activeTab.id === props.id;
 
   return (
     <div
       className={cn(
-        "text-xs h-full flex items-center justify-between hover:bg-muted gap-2 p-2 group rounded-t-md transition-colors min-w-20 max-w-50 truncate flex-1 shrink overflow-hidden",
+        "text-xs h-full flex items-center justify-between hover:bg-input/90 gap-2 p-2 group rounded-t-md transition-all min-w-20 max-w-50 truncate flex-1 shrink overflow-hidden",
         tabIsActive ? "bg-input" : "",
       )}
       onClick={() => {
-        tabStore.setActiveTab(props);
+        setActiveTab(props);
       }}
       onAuxClick={(event) => {
         if (event.button == 1) {
           event.preventDefault();
-          tabStore.removeTab(props.id);
+          removeTab(props.id);
         }
       }}
     >
@@ -26,11 +30,11 @@ function EditorTab(props: Tab) {
       <button
         onClick={(event) => {
           event.stopPropagation();
-          tabStore.removeTab(props.id);
+          removeTab(props.id);
         }}
       >
         <XIcon
-          className="text-transparent group-hover:text-muted-foreground hover:text-destructive"
+          className="text-transparent group-hover:text-muted-foreground hover:text-destructive transition-colors"
           size={12}
         />
       </button>

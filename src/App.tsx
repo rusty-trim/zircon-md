@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { NewTabView } from "./components/new-tab-view";
 import { ThemeProvider } from "./components/theme-provider";
 import { TitleBar } from "./components/title-bar";
 import { Editor } from "./components/ui/editor";
 import { Sidebar } from "./components/ui/sidebar";
 import { TabType, useTabStore } from "./stores/tabStore";
+import { initAppStorage } from "./lib/appStorage";
 
 function App() {
   // async function greet() {
@@ -11,7 +13,11 @@ function App() {
   //   setGreetMsg(await invoke("greet", { name }));
   // }
 
-  const tabStore = useTabStore();
+  const activeTab = useTabStore((store) => store.activeTab);
+
+  useEffect(() => {
+    initAppStorage();
+  }, []);
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
@@ -19,8 +25,8 @@ function App() {
         <TitleBar />
         <div className="flex grow">
           <Sidebar />
-          {tabStore.activeTab && (() => {
-            switch (tabStore.activeTab.type) {
+          {activeTab && (() => {
+            switch (activeTab.type) {
               case TabType.NEW:
                 return <NewTabView />;
               case TabType.FILE:
