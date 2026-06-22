@@ -9,7 +9,7 @@ function Sidebar() {
     return (
       <div className="flex-col w-64 bg-sidebar border-r">
         {files?.children.map((node) => (
-          <FileEntity key={node.path} node={node} children={node.children} />
+          <FileEntity key={node.path} node={node} />
         ))}
       </div>
     );
