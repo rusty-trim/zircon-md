@@ -5,17 +5,15 @@ import { useEffect } from "react";
 import { EditorTab } from "./ui/editor-tab";
 
 function TitleBar() {
-  const { tabs, ensureTab, addNewTab } = useTabStore((store) => ({
-    tabs: store.tabs,
-    ensureTab: store.ensureTab,
-    addNewTab: store.addNewTab,
-  }));
+  const tabs = useTabStore((store) => store.tabs);
+  const ensureTab = useTabStore((store) => store.ensureTab);
+  const addNewTab = useTabStore((store) => store.addNewTab);
 
   const appWindow = getCurrentWindow();
 
   useEffect(() => {
     ensureTab();
-  }, [tabs]);
+  }, [ensureTab]);
 
   function handleMinimize() {
     appWindow.minimize();

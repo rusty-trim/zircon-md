@@ -3,12 +3,10 @@ import { Tab, useTabStore } from "@/stores/tabStore";
 import { XIcon } from "lucide-react";
 
 function EditorTab(props: Tab) {
-  const { activeTab, setActiveTab, removeTab } = useTabStore((store) => ({
-    activeTab: store.activeTab,
-    setActiveTab: store.setActiveTab,
-    removeTab: store.removeTab,
-  }));
-  const tabIsActive = activeTab.id === props.id;
+  const activeTab = useTabStore((store) => store.activeTab);
+  const setActiveTab = useTabStore((store) => store.setActiveTab);
+  const removeTab = useTabStore((store) => store.removeTab);
+  const tabIsActive = activeTab?.id === props.id;
 
   return (
     <div

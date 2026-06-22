@@ -1,11 +1,9 @@
-import { useEffect } from "react";
 import { NewTabView } from "./components/new-tab-view";
 import { ThemeProvider } from "./components/theme-provider";
 import { TitleBar } from "./components/title-bar";
 import { Editor } from "./components/ui/editor";
 import { Sidebar } from "./components/ui/sidebar";
 import { TabType, useTabStore } from "./stores/tabStore";
-import { initAppStorage } from "./lib/appStorage";
 
 function App() {
   // async function greet() {
@@ -14,10 +12,6 @@ function App() {
   // }
 
   const activeTab = useTabStore((store) => store.activeTab);
-
-  useEffect(() => {
-    initAppStorage();
-  }, []);
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
