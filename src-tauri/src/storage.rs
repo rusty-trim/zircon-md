@@ -2,6 +2,7 @@ use std::{fmt::format, fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
+use walkdir::WalkDir;
 
 const SETTINGS_FILE: &str = "settings.json";
 const SESSION_FILE: &str = "session.json";
@@ -33,7 +34,20 @@ pub struct TabEntry {
     pub id: String,
     pub path: Option<String>,
     pub r#type: i8,
-    pub name: String
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct FileTree {
+    pub children: Vec<FileTreeNode>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct FileTreeNode {
+    pub name: String,
+    pub path: String,
+    pub is_dir: bool,
+    pub children: Vec<FileTreeNode>,
 }
 
 impl Default for Session {
@@ -107,4 +121,70 @@ pub fn load_session(app: AppHandle) -> Result<Session, String> {
 pub fn save_session(app: AppHandle, session: Session) -> Result<(), String> {
     let path = app_data_dir(&app)?.join(SESSION_FILE);
     atomic_write_json(&path, &session)
+}
+
+#[tauri::command]
+pub fn load_vault_files(app: AppHandle, vaultPath: String) -> Result<FileTree, String> {
+    let mut tree = FileTree { children: vec![] };
+
+    let vault_root = PathBuf::from(&vaultPath);
+
+    // collect all entries (files + dirs)
+    let mut entries: Vec<(PathBuf, bool)> = WalkDir::new(&vaultPath)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path() != vault_root)
+        .map(|e| (e.path().to_path_buf(), e.path().is_dir()))
+        .collect();
+
+    // sort by component count so parents are created before children
+    entries.sort_by_key(|(p, _)| p.components().count());
+
+    for (path, is_dir) in entries {
+        let rel = path
+            .strip_prefix(&vault_root)
+            .map_err(|e| format!("Failed to compute relative path: {e}"))?;
+
+        let comps: Vec<String> = rel
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy().to_string())
+            .collect();
+
+        insert_into_children(&mut tree.children, &comps, is_dir, &path.to_string_lossy());
+    }
+
+    Ok(tree)
+}
+
+fn insert_into_children(children: &mut Vec<FileTreeNode>, comps: &[String], is_dir: bool, full_path: &str) {
+    if comps.is_empty() {
+        return;
+    }
+
+    let name = &comps[0];
+
+    // find existing node
+    if let Some(node) = children.iter_mut().find(|n| n.name == *name) {
+        if comps.len() == 1 {
+            node.is_dir = node.is_dir || is_dir;
+            node.path = full_path.to_string();
+        } else {
+            insert_into_children(&mut node.children, &comps[1..], is_dir, full_path);
+        }
+        return;
+    }
+
+    // create new node
+    let mut node = FileTreeNode {
+        name: name.clone(),
+        path: if comps.len() == 1 { full_path.to_string() } else { String::new() },
+        is_dir: if comps.len() > 1 { true } else { is_dir },
+        children: vec![],
+    };
+
+    if comps.len() > 1 {
+        insert_into_children(&mut node.children, &comps[1..], is_dir, full_path);
+    }
+
+    children.push(node);
 }

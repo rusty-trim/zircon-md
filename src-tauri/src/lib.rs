@@ -1,5 +1,7 @@
 mod storage;
-use storage::{init_app_storage, load_settings, load_session, save_settings, save_session};
+use storage::{
+    init_app_storage, load_session, load_settings, load_vault_files, save_session, save_settings,
+};
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -16,8 +18,9 @@ pub fn run() {
             load_settings,
             load_session,
             save_settings,
-            save_session
-            ])
+            save_session,
+            load_vault_files
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

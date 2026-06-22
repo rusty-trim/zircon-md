@@ -9,10 +9,6 @@ import { initSessionSync } from "./lib/session-sync";
 import { useTabStore } from "./stores/tab-store";
 import { useVaultStore } from "./stores/vault-store";
 
-/**
- * App - Root component
- * Handles session initialization and vault/content switching
- */
 function App() {
   const vaultPath = useVaultStore((store) => store.vaultPath);
 
@@ -26,7 +22,7 @@ function App() {
       );
       vaultStore.setVaultPath(session.vaultPath);
       initSessionSync();
-    });
+    }).catch((err) => console.error(err));
   }, []);
 
   return (

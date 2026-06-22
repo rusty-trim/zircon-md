@@ -1,15 +1,20 @@
+import { FileTree } from "@/lib/app-storage";
 import { create } from "zustand";
 
 export interface VaultState {
     vaultPath: string | null;
+    files: FileTree | null;
+    setFiles: (tree: FileTree | null) => void;
     setVaultPath: (path: string | null) => void;
 }
 
 export const useVaultStore = create<VaultState>((set) => ({
     vaultPath: null,
+    files: null,
     setVaultPath: (path: string | null) => {
         set(() => ({ vaultPath: path }))
-    }
+    },
+    setFiles: (tree: FileTree | null) => set(() => ({ files: tree }))
 }));
 
 export function getVaultName(vaultPath: string): string {
