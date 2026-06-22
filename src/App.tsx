@@ -29,7 +29,7 @@ function App() {
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <div className="grainy flex flex-col w-full h-full">
         <TitleBar />
-        <div className="flex grow">
+        <div className="flex grow min-h-0">
           <Sidebar />
           {vaultPath ? <VaultContent /> : <VaultSetup />}
         </div>

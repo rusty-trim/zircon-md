@@ -1,5 +1,5 @@
 import { useVaultStore } from "@/stores/vault-store";
-import FileEntity from "../file-entity";
+import FileEntityTree from "../file-entity";
 
 function Sidebar() {
   const vaultPath = useVaultStore((store) => store.vaultPath);
@@ -7,10 +7,13 @@ function Sidebar() {
 
   if (vaultPath) {
     return (
-      <div className="flex-col w-64 bg-sidebar border-r">
-        {files?.children.map((node) => (
-          <FileEntity key={node.path} node={node} />
-        ))}
+      <div className="flex flex-col w-64 grow h-full">
+        <div className="flex flex-col grow overflow-y-auto">
+          <FileEntityTree tree={files} />
+          {/* {files?.children.map((node) => (
+            <FileEntityTree key={node.path} node={node} />
+          ))} */}
+        </div>
       </div>
     );
   } else {

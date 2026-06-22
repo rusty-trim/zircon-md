@@ -38,11 +38,13 @@ pub struct TabEntry {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct FileTree {
     pub children: Vec<FileTreeNode>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct FileTreeNode {
     pub name: String,
     pub path: String,
@@ -124,13 +126,13 @@ pub fn save_session(app: AppHandle, session: Session) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn load_vault_files(app: AppHandle, vaultPath: String) -> Result<FileTree, String> {
+pub fn load_vault_files(vault_path: String) -> Result<FileTree, String> {
     let mut tree = FileTree { children: vec![] };
 
-    let vault_root = PathBuf::from(&vaultPath);
+    let vault_root = PathBuf::from(&vault_path);
 
     // collect all entries (files + dirs)
-    let mut entries: Vec<(PathBuf, bool)> = WalkDir::new(&vaultPath)
+    let mut entries: Vec<(PathBuf, bool)> = WalkDir::new(&vault_path)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path() != vault_root)

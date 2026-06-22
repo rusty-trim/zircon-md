@@ -130,8 +130,8 @@
     @apply font-sans;
   }
 
-  div#root {
-    @apply w-screen h-screen;
+  html, body, #root {
+      height: 100%;
   }
 
   .grainy:before {
