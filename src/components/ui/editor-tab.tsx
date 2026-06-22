@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Tab, useTabStore } from "@/stores/tabStore";
+import { Tab, useTabStore } from "@/stores/tab-store";
 import { XIcon } from "lucide-react";
 
 function EditorTab(props: Tab) {

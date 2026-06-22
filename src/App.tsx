@@ -1,34 +1,41 @@
-import { NewTabView } from "./components/new-tab-view";
-import { ThemeProvider } from "./components/theme-provider";
-import { TitleBar } from "./components/title-bar";
-import { Editor } from "./components/ui/editor";
-import { Sidebar } from "./components/ui/sidebar";
-import { TabType, useTabStore } from "./stores/tabStore";
+import { ThemeProvider } from "@/components/theme-provider";
+import { TitleBar } from "@/components/title-bar";
+import { Sidebar } from "@/components/ui/sidebar";
+import { useEffect } from "react";
+import { VaultContent } from "./components/vault-content";
+import { VaultSetup } from "./components/vault-setup";
+import { loadSession } from "./lib/app-storage";
+import { initSessionSync } from "./lib/session-sync";
+import { useTabStore } from "./stores/tab-store";
+import { useVaultStore } from "./stores/vault-store";
 
+/**
+ * App - Root component
+ * Handles session initialization and vault/content switching
+ */
 function App() {
-  // async function greet() {
-  //   // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-  //   setGreetMsg(await invoke("greet", { name }));
-  // }
+  const vaultPath = useVaultStore((store) => store.vaultPath);
 
-  const activeTab = useTabStore((store) => store.activeTab);
+  useEffect(() => {
+    loadSession().then((session) => {
+      const tabStore = useTabStore.getState();
+      const vaultStore = useVaultStore.getState();
+      tabStore.setTabs(session.tabs);
+      tabStore.setActiveTab(
+        session.tabs.find((tab) => tab.id === session.activeTabId) ?? null
+      );
+      vaultStore.setVaultPath(session.vaultPath);
+      initSessionSync();
+    });
+  }, []);
 
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <div className="grainy flex flex-col w-full h-full">
         <TitleBar />
         <div className="flex grow">
           <Sidebar />
-          {activeTab && (() => {
-            switch (activeTab.type) {
-              case TabType.NEW:
-                return <NewTabView />;
-              case TabType.FILE:
-                return <Editor />;
-              default:
-                return null;
-            }
-          })()}
+          {vaultPath ? <VaultContent /> : <VaultSetup />}
         </div>
       </div>
     </ThemeProvider>

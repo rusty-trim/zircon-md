@@ -14,13 +14,13 @@ export interface Tab {
 
 interface TabState {
     tabs: Tab[];
-    activeTab: Tab;
+    activeTab: Tab | null;
     addTab: (tab: Tab) => void;
     addNewTab: () => void;
     removeTab: (id: string) => void;
     setTabs: (tabs: Tab[]) => void;
     ensureTab: () => void;
-    setActiveTab: (tab: Tab) => void;
+    setActiveTab: (tab: Tab | null) => void;
 }
 
 export const useTabStore = create<TabState>((set, get) => ({
@@ -35,6 +35,7 @@ export const useTabStore = create<TabState>((set, get) => ({
         const tab = { id: crypto.randomUUID(), type: TabType.NEW, name: "New Tab" };
         set((state) => ({ tabs: [...state.tabs, tab] }));
         get().setActiveTab(tab)
+        
     },
     removeTab: (id) => {
         const tab = get().tabs.find((_tab) => _tab.id == id);
@@ -56,6 +57,6 @@ export const useTabStore = create<TabState>((set, get) => ({
             get().addNewTab();
         }
     },
-    setActiveTab: (tab: Tab) => set(() => ({ activeTab: tab })),
+    setActiveTab: (tab: Tab | null) => set(() => ({ activeTab: tab })),
     findTab: (id: string) => get().tabs.find((tab) => tab.id == id)
 }))

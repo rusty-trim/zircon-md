@@ -7,6 +7,7 @@ const SETTINGS_FILE: &str = "settings.json";
 const SESSION_FILE: &str = "session.json";
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Settings {
     pub theme: String,
 }
@@ -20,9 +21,9 @@ impl Default for Settings {
 }
 
 #[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Session {
     pub vault_path: Option<String>,
-    pub vault: Option<String>,
     pub tabs: Vec<TabEntry>,
     pub active_tab_id: Option<String>,
 }
@@ -30,14 +31,15 @@ pub struct Session {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct TabEntry {
     pub id: String,
-    pub path: String,
+    pub path: Option<String>,
+    pub r#type: i8,
+    pub name: String
 }
 
 impl Default for Session {
     fn default() -> Self {
         Self {
             vault_path: None,
-            vault: None,
             tabs: vec![],
             active_tab_id: None,
         }
@@ -83,5 +85,26 @@ fn atomic_write_json<T: Serialize>(path: &PathBuf, data: &T) -> Result<(), Strin
 pub fn load_settings(app: AppHandle) -> Result<Settings, String> {
     let path = app_data_dir(&app)?.join(SETTINGS_FILE);
     let raw = fs::read_to_string(&path).map_err(|e| format!("Failed to read settings: {e}"))?;
-    serde_json::from_str(&raw).map_err(|e| format!("Failed to prase settings: {e}"))?
+    Ok(serde_json::from_str::<Settings>(&raw)
+        .map_err(|e| format!("Failed to parse settings: {e}"))?)
+}
+
+#[tauri::command]
+pub fn save_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
+    let path = app_data_dir(&app)?.join(SETTINGS_FILE);
+    atomic_write_json(&path, &settings)
+}
+
+#[tauri::command]
+pub fn load_session(app: AppHandle) -> Result<Session, String> {
+    let path = app_data_dir(&app)?.join(SESSION_FILE);
+    let raw = fs::read_to_string(&path).map_err(|e| format!("Failed to read settings: {e}"))?;
+    Ok(serde_json::from_str::<Session>(&raw)
+        .map_err(|e| format!("Failed to parse session: {e}"))?)
+}
+
+#[tauri::command]
+pub fn save_session(app: AppHandle, session: Session) -> Result<(), String> {
+    let path = app_data_dir(&app)?.join(SESSION_FILE);
+    atomic_write_json(&path, &session)
 }
