@@ -13,7 +13,7 @@ function TitleBar() {
 
   useEffect(() => {
     ensureTab();
-  }, [ensureTab]);
+  }, [tabs, ensureTab]);
 
   function handleMinimize() {
     appWindow.minimize();
