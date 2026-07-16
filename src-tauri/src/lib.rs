@@ -1,6 +1,8 @@
 mod storage;
+mod lexer;
+mod parser;
 use storage::{
-    init_app_storage, load_session, load_settings, load_vault_files, save_session, save_settings,
+    init_app_storage, load_session, load_settings, load_vault_files, save_session, save_settings, load_file_content
 };
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 
@@ -19,7 +21,8 @@ pub fn run() {
             load_session,
             save_settings,
             save_session,
-            load_vault_files
+            load_vault_files,
+            load_file_content
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

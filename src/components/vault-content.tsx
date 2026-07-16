@@ -1,18 +1,28 @@
+import { loadFileContent, loadVaultFiles } from "@/lib/app-storage";
 import { TabType, useTabStore } from "@/stores/tab-store";
-import { NewTabView } from "./new-tab-view";
-import { Editor } from "./editor";
-import { useEffect } from "react";
-import { loadVaultFiles } from "@/lib/app-storage";
 import { useVaultStore } from "@/stores/vault-store";
+import { useEffect, useState } from "react";
+import { NewTabView } from "./new-tab-view";
+import { Editor } from "./ui/editor";
+import { Document } from "@/types";
 
 export function VaultContent() {
   const activeTab = useTabStore((store) => store.activeTab);
+  const [content, setContent] = useState<Document | null>(null);
 
   useEffect(() => {
     loadVaultFiles(useVaultStore.getState().vaultPath!).then((files) => {
       useVaultStore.getState().setFiles(files);
     });
   }, []);
+
+  useEffect(() => {
+    if (activeTab?.path) {
+      loadFileContent(activeTab.path).then((fileContent) => {
+        setContent(fileContent);
+      });
+    }
+  }, [activeTab]);
 
   return (
     <>
@@ -22,7 +32,7 @@ export function VaultContent() {
             case TabType.NEW:
               return <NewTabView />;
             case TabType.FILE:
-              return <Editor />;
+              return <Editor content={content} />;
             default:
               return null;
           }

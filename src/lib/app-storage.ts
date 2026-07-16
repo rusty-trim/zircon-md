@@ -1,4 +1,5 @@
 import { Tab } from "@/stores/tab-store";
+import { AstNode, Document } from "@/types";
 import { invoke } from "@tauri-apps/api/core";
 
 interface Settings {
@@ -27,3 +28,4 @@ export const saveSettings = async (settings: Settings) => invoke<void>("save_set
 export const loadSession = async () => invoke<Session>("load_session");
 export const saveSession = async (session: Session) => invoke<void>("save_session", { session });
 export const loadVaultFiles = async (vaultPath: string) => invoke<FileTree>("load_vault_files", { vaultPath })
+export const loadFileContent = async (filePath: string) => invoke<Document>("load_file_content", { filePath });

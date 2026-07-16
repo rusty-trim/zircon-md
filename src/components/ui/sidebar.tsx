@@ -7,8 +7,8 @@ function Sidebar() {
 
   if (vaultPath) {
     return (
-      <div className="flex flex-col w-64 grow h-full">
-        <div className="flex flex-col grow overflow-y-auto">
+      <div className="flex flex-col w-64 h-full shrink-0 border-r">
+        <div className="flex flex-col overflow-y-auto">
           <FileEntityTree tree={files} />
           {/* {files?.children.map((node) => (
             <FileEntityTree key={node.path} node={node} />

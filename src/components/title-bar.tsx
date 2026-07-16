@@ -32,7 +32,7 @@ function TitleBar() {
   return (
     <div
       data-tauri-drag-region
-      className="flex items-center h-fit w-full select-none bg-sidebar"
+      className="flex items-center h-fit w-full select-none bg-sidebar border-b"
     >
       <div
         data-tauri-drag-region

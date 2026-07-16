@@ -2,6 +2,7 @@ import { FileTree, FileTreeNode } from "@/lib/app-storage";
 import { ComponentPropsWithoutRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
+import { TabType, useTabStore } from "@/stores/tab-store";
 
 interface FileEntityProps extends ComponentPropsWithoutRef<"div"> {
   node: FileTreeNode;
@@ -9,12 +10,25 @@ interface FileEntityProps extends ComponentPropsWithoutRef<"div"> {
 }
 
 function FileItem(props: FileEntityProps) {
+  function openTab() {
+    const tab = {
+      id: crypto.randomUUID(),
+      type: TabType.FILE,
+      name: props.node.name.replace(/\.md$/i, ""),
+      path: props.node.path,
+    };
+    useTabStore.getState().addTab(tab);
+  }
+
   return (
     <div className="select-none">
       <div
-        className={cn("my-2 flex items-center text-xs cursor-pointer hover:bg-input/90 h-8", props.className)}
+        className={cn(
+          "my-2 flex items-center text-xs cursor-pointer hover:bg-input/90 h-8",
+          props.className,
+        )}
         style={{ paddingLeft: `${props.depth * 8}px` }}
-        onClick={props.onClick}
+        onClick={() => openTab()}
       >
         {props.node.name.replace(/\.md$/i, "")}
       </div>
@@ -28,11 +42,22 @@ function FolderItem(props: FileEntityProps) {
   return (
     <div className="select-none">
       <div
-        className={cn("py-2 flex items-center text-xs cursor-pointer hover:bg-input/90 h-8", props.className)}
+        className={cn(
+          "py-2 flex items-center text-xs cursor-pointer hover:bg-input/90 h-8",
+          props.className,
+        )}
         style={{ paddingLeft: `${props.depth * 8}px` }}
         onClick={() => setIsOpen((open) => !open)}
       >
-        <span className="mr-2"><ChevronDown className={cn(isOpen ? "rotate-0" : "-rotate-90", "transition-transform")} size={16} /></span>
+        <span className="mr-2">
+          <ChevronDown
+            className={cn(
+              isOpen ? "rotate-0" : "-rotate-90",
+              "transition-transform",
+            )}
+            size={16}
+          />
+        </span>
         {props.node.name}
       </div>
       {isOpen &&

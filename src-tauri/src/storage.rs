@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
 use walkdir::WalkDir;
 
+use crate::{lexer, parser::{self, Document}};
+
 const SETTINGS_FILE: &str = "settings.json";
 const SESSION_FILE: &str = "session.json";
 
@@ -120,6 +122,22 @@ pub fn load_session(app: AppHandle) -> Result<Session, String> {
 }
 
 #[tauri::command]
+pub fn load_file_content(app: AppHandle, file_path: String) -> Result<Document, String> {
+    let raw =
+        fs::read_to_string(&file_path).map_err(|e| format!("Failed to read settings: {e}"))?;
+
+    let lexer: lexer::Lexer = lexer::Lexer {};
+    let tokens = lexer.tokenize(raw.lines());
+
+    let mut parser: parser::Parser = parser::Parser {
+        tokens: tokens,
+        current: 0,
+    };
+
+    Ok(parser.parse())
+}
+
+#[tauri::command]
 pub fn save_session(app: AppHandle, session: Session) -> Result<(), String> {
     let path = app_data_dir(&app)?.join(SESSION_FILE);
     atomic_write_json(&path, &session)
@@ -158,7 +176,12 @@ pub fn load_vault_files(vault_path: String) -> Result<FileTree, String> {
     Ok(tree)
 }
 
-fn insert_into_children(children: &mut Vec<FileTreeNode>, comps: &[String], is_dir: bool, full_path: &str) {
+fn insert_into_children(
+    children: &mut Vec<FileTreeNode>,
+    comps: &[String],
+    is_dir: bool,
+    full_path: &str,
+) {
     if comps.is_empty() {
         return;
     }
@@ -179,7 +202,11 @@ fn insert_into_children(children: &mut Vec<FileTreeNode>, comps: &[String], is_d
     // create new node
     let mut node = FileTreeNode {
         name: name.clone(),
-        path: if comps.len() == 1 { full_path.to_string() } else { String::new() },
+        path: if comps.len() == 1 {
+            full_path.to_string()
+        } else {
+            String::new()
+        },
         is_dir: if comps.len() > 1 { true } else { is_dir },
         children: vec![],
     };
