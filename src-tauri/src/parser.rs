@@ -20,7 +20,6 @@ pub enum AstNode {
     Italic { children: Vec<AstNode> },
     Spoiler { children: Vec<AstNode> },
     InlineCode { children: Vec<AstNode> },
-    NewLine,
 }
 
 pub struct Parser {
@@ -69,7 +68,7 @@ impl Parser {
                     children: Vec::new(),
                 }
             }
-            TokenType::CodeBlockDelimiter => self.parse_code_block(),
+            // TokenType::CodeBlockDelimiter => self.parse_code_block(),
             _ => self.parse_paragraph(),
         }
     }
@@ -173,7 +172,7 @@ impl Parser {
         AstNode::InlineCode { children }
     }
 
-    fn parse_code_block(&mut self) -> AstNode {
-        AstNode::NewLine
-    }
+    // fn parse_code_block(&mut self) -> AstNode {
+
+    // }
 }
