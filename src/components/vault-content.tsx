@@ -19,6 +19,7 @@ export function VaultContent() {
   useEffect(() => {
     if (activeTab?.path) {
       loadFileContent(activeTab.path).then((fileContent) => {
+        console.log(fileContent)
         setContent(fileContent);
       });
     }

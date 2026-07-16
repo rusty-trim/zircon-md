@@ -1,4 +1,4 @@
-use std::{ops::Add, str::Lines};
+use std::ops::Add;
 
 pub enum TokenType {
     Heading { level: u8 },
@@ -6,7 +6,7 @@ pub enum TokenType {
     ItalicDelimiter,
     SpoilerDelimiter,
     InlineCodeDelimiter,
-    CodeBlockDelimiter,
+    CodeBlockDelimiter { code: String, lang: Option<String> },
     Text,
     NewLine,
     DocEnd,
@@ -42,11 +42,14 @@ impl Lexer {
         }
     }
 
-    pub fn tokenize(&self, lines: Lines<'_>) -> Vec<Token> {
+    pub fn tokenize(&self, input: &str) -> Vec<Token> {
         let mut tokens: Vec<Token> = vec![];
 
         let mut line_count: usize = 0;
-        for line in lines {
+        let mut lines = input.lines().peekable();
+
+        while let Some(line) = lines.next() {
+            // for line in lines {
             line_count += 1;
             let mut chars = line.chars().peekable();
             let mut column_count = 0;
@@ -156,12 +159,41 @@ impl Lexer {
                                 });
                             }
                             3 => {
+                                // Handle code block
+                                let info_string = line.trim_start()[3..].trim();
+
+                                let lang = if info_string.is_empty() {
+                                    None
+                                } else {
+                                    Some(info_string.to_string())
+                                };
+
+                                let fence_line = line_count;
+                                let mut code_lines = Vec::new();
+
+                                while let Some(next_line) = lines.next() {
+                                    line_count += 1;
+
+                                    if next_line.trim() == "```" {
+                                        break;
+                                    }
+
+                                    code_lines.push(next_line);
+                                }
+
                                 tokens.push(Token {
-                                    r#type: TokenType::CodeBlockDelimiter,
+                                    r#type: TokenType::CodeBlockDelimiter {
+                                        code: code_lines.join("\n"),
+                                        lang,
+                                    },
                                     value: String::new(),
-                                    line: line_count,
+                                    line: fence_line,
                                     column: start_column,
                                 });
+
+                                break;
+
+                                // TODO: Handle code lines
                             }
                             _ => {
                                 let mut text = String::new();
@@ -204,12 +236,13 @@ impl Lexer {
                 line: line_count,
                 column: column_count,
             });
+            // }
         }
 
         tokens.push(Token {
             r#type: TokenType::DocEnd,
             value: String::new(),
-            line: line_count + 1,
+            line: line_count,
             column: 0,
         });
 

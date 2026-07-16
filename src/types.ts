@@ -15,6 +15,7 @@ export type AstNode =
     | Italic
     | Spoiler
     | InlineCode
+    | CodeBlock
 
 export interface Document {
     children: AstNode[];
@@ -23,11 +24,13 @@ export interface Document {
 export interface Heading {
     type: "heading"
     level: number;
+    line: number;
     children: AstNode[];
 };
 
 export interface Paragraph {
     type: "paragraph";
+    line: number;
     children: AstNode[];
 };
 
@@ -54,4 +57,10 @@ export interface Spoiler {
 export interface InlineCode {
     type: "inlineCode";
     children: AstNode[];
+};
+
+export interface CodeBlock {
+    type: "codeBlock";
+    code: string;
+    lang: string;
 };

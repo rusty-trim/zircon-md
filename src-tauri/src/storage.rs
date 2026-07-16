@@ -1,4 +1,4 @@
-use std::{fmt::format, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Manager};
@@ -127,7 +127,7 @@ pub fn load_file_content(app: AppHandle, file_path: String) -> Result<Document, 
         fs::read_to_string(&file_path).map_err(|e| format!("Failed to read settings: {e}"))?;
 
     let lexer: lexer::Lexer = lexer::Lexer {};
-    let tokens = lexer.tokenize(raw.lines());
+    let tokens = lexer.tokenize(&raw);
 
     let mut parser: parser::Parser = parser::Parser {
         tokens: tokens,

@@ -11,15 +11,43 @@ pub struct Document {
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum AstNode {
-    Document { children: Vec<AstNode> },
-    Heading { level: u8, children: Vec<AstNode> },
-    BlockQuote { level: u8, children: Vec<AstNode> },
-    Paragraph { children: Vec<AstNode> },
-    Text { value: String },
-    Bold { children: Vec<AstNode> },
-    Italic { children: Vec<AstNode> },
-    Spoiler { children: Vec<AstNode> },
-    InlineCode { children: Vec<AstNode> },
+    Document {
+        children: Vec<AstNode>,
+    },
+    Heading {
+        level: u8,
+        line: usize,
+        children: Vec<AstNode>,
+    },
+    BlockQuote {
+        level: u8,
+        line: usize,
+        children: Vec<AstNode>,
+    },
+    Paragraph {
+        line: usize,
+        children: Vec<AstNode>,
+    },
+    Text {
+        value: String,
+    },
+    Bold {
+        children: Vec<AstNode>,
+    },
+    Italic {
+        children: Vec<AstNode>,
+    },
+    Spoiler {
+        children: Vec<AstNode>,
+    },
+    InlineCode {
+        children: Vec<AstNode>,
+    },
+    CodeBlock {
+        line: usize,
+        code: String,
+        lang: Option<String>,
+    },
 }
 
 pub struct Parser {
@@ -55,6 +83,7 @@ impl Parser {
     fn parse_block(&mut self) -> AstNode {
         if self.is_at_end() {
             return AstNode::Paragraph {
+                line: self.peek().line,
                 children: Vec::new(),
             };
         }
@@ -62,13 +91,14 @@ impl Parser {
         match &self.peek().r#type {
             TokenType::Heading { .. } => self.parse_heading(),
             TokenType::NewLine => {
-                self.advance();
+                let current = self.advance();
 
                 AstNode::Paragraph {
+                    line: current.line,
                     children: Vec::new(),
                 }
             }
-            // TokenType::CodeBlockDelimiter => self.parse_code_block(),
+            TokenType::CodeBlockDelimiter { .. } => self.parse_code_block(),
             _ => self.parse_paragraph(),
         }
     }
@@ -85,9 +115,13 @@ impl Parser {
             children.push(self.parse_inline());
         }
 
-        self.advance();
+        let current = self.advance();
 
-        AstNode::Heading { level, children }
+        AstNode::Heading {
+            level,
+            children,
+            line: current.line,
+        }
     }
 
     fn parse_paragraph(&mut self) -> AstNode {
@@ -97,11 +131,16 @@ impl Parser {
             children.push(self.parse_inline());
         }
 
+        let mut current = self.peek();
+
         if matches!(self.peek().r#type, TokenType::NewLine) {
-            self.advance();
+            current = self.advance();
         }
 
-        AstNode::Paragraph { children }
+        AstNode::Paragraph {
+            children,
+            line: current.line,
+        }
     }
 
     fn parse_inline(&mut self) -> AstNode {
@@ -172,7 +211,22 @@ impl Parser {
         AstNode::InlineCode { children }
     }
 
-    // fn parse_code_block(&mut self) -> AstNode {
+    fn parse_code_block(&mut self) -> AstNode {
+        let start_line = self.peek().line;
 
-    // }
+        let (code, lang) = match &self.advance().r#type {
+            TokenType::CodeBlockDelimiter { code, lang } => (code.clone(), lang.clone()),
+            _ => unreachable!(),
+        };
+
+        if matches!(self.peek().r#type, TokenType::NewLine) {
+            self.advance();
+        }
+
+        AstNode::CodeBlock {
+            code,
+            lang,
+            line: start_line,
+        }
+    }
 }
