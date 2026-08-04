@@ -61,20 +61,6 @@ function CodeBlockHeader({
           {lang ?? ""}
         </div>
       ) : (
-        // <span
-        //   style={{
-        //     color: validLang ? validLang.theme : "#FFFFFF",
-        //     backgroundColor: validLang
-        //       ? hexToRgba(validLang.theme, 0.1)
-        //       : hexToRgba("#FFFFFF", 0.1),
-        //   }}
-        //   className={cn(
-        //     "absolute right-3 top-3 select-none rounded bg-white/[0.07] px-2 py-0.5 text-xs font-mono font-medium opacity-60 transition-opacity group-hover:opacity-100",
-        //   )}
-        //   spellCheck="false"
-        // >
-        //   {validLang ? validLang.label : lang}
-        // </span>
         <div className="flex items-center gap-2 px-3 py-2 border-b">
           {iconUrl ? (
             <img src={iconUrl} alt={label} className="size-4.5 shrink-0" />
