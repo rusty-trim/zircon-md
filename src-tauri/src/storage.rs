@@ -122,7 +122,7 @@ pub fn load_session(app: AppHandle) -> Result<Session, String> {
 }
 
 #[tauri::command]
-pub fn load_file_content(app: AppHandle, file_path: String) -> Result<Document, String> {
+pub fn load_file_content(_app: AppHandle, file_path: String) -> Result<Document, String> {
     let raw =
         fs::read_to_string(&file_path).map_err(|e| format!("Failed to read settings: {e}"))?;
 

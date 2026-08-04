@@ -17,34 +17,48 @@ pub enum AstNode {
     Heading {
         level: u8,
         line: usize,
+        column: usize,
         children: Vec<AstNode>,
     },
     BlockQuote {
         level: u8,
         line: usize,
+        column: usize,
         children: Vec<AstNode>,
     },
     Paragraph {
         line: usize,
+        column: usize,
         children: Vec<AstNode>,
     },
     Text {
         value: String,
     },
     Bold {
+        line: usize,
+        column: usize,
         children: Vec<AstNode>,
     },
     Italic {
+        line: usize,
+        column: usize,
         children: Vec<AstNode>,
     },
     Spoiler {
+        line: usize,
+        column: usize,
         children: Vec<AstNode>,
     },
     InlineCode {
+        line: usize,
+        column: usize,
         children: Vec<AstNode>,
     },
+    #[serde(rename_all = "camelCase")]
     CodeBlock {
         line: usize,
+        end_line: usize,
+        column: usize,
         code: String,
         lang: Option<String>,
     },
@@ -82,8 +96,10 @@ impl Parser {
 
     fn parse_block(&mut self) -> AstNode {
         if self.is_at_end() {
+            let current = self.peek();
             return AstNode::Paragraph {
-                line: self.peek().line,
+                line: current.line,
+                column: current.column,
                 children: Vec::new(),
             };
         }
@@ -95,6 +111,7 @@ impl Parser {
 
                 AstNode::Paragraph {
                     line: current.line,
+                    column: current.column,
                     children: Vec::new(),
                 }
             }
@@ -121,6 +138,7 @@ impl Parser {
             level,
             children,
             line: current.line,
+            column: current.column,
         }
     }
 
@@ -140,6 +158,7 @@ impl Parser {
         AstNode::Paragraph {
             children,
             line: current.line,
+            column: current.column,
         }
     }
 
@@ -163,18 +182,32 @@ impl Parser {
         self.advance();
         let mut children = Vec::new();
 
+        let (line, column) = {
+            let current = self.peek();
+            (current.line, current.column)
+        };
+
         while !matches!(self.peek().r#type, TokenType::BoldDelimiter) {
             children.push(self.parse_inline());
         }
 
         self.advance();
 
-        AstNode::Bold { children }
+        AstNode::Bold {
+            children,
+            line,
+            column,
+        }
     }
 
     fn parse_italic(&mut self) -> AstNode {
         self.advance();
         let mut children = Vec::new();
+
+        let (line, column) = {
+            let current = self.peek();
+            (current.line, current.column)
+        };
 
         while !matches!(self.peek().r#type, TokenType::ItalicDelimiter) {
             children.push(self.parse_inline());
@@ -182,12 +215,21 @@ impl Parser {
 
         self.advance();
 
-        AstNode::Italic { children }
+        AstNode::Italic {
+            children,
+            line,
+            column,
+        }
     }
 
     fn parse_spoiler(&mut self) -> AstNode {
         self.advance();
         let mut children = Vec::new();
+
+        let (line, column) = {
+            let current = self.peek();
+            (current.line, current.column)
+        };
 
         while !matches!(self.peek().r#type, TokenType::SpoilerDelimiter) {
             children.push(self.parse_inline());
@@ -195,12 +237,21 @@ impl Parser {
 
         self.advance();
 
-        AstNode::Spoiler { children }
+        AstNode::Spoiler {
+            children,
+            line,
+            column,
+        }
     }
 
     fn parse_inline_code(&mut self) -> AstNode {
         self.advance();
         let mut children = Vec::new();
+
+        let (line, column) = {
+            let current = self.peek();
+            (current.line, current.column)
+        };
 
         while !matches!(self.peek().r#type, TokenType::InlineCodeDelimiter) {
             children.push(self.parse_inline());
@@ -208,14 +259,31 @@ impl Parser {
 
         self.advance();
 
-        AstNode::InlineCode { children }
+        AstNode::InlineCode {
+            children,
+            line,
+            column,
+        }
     }
 
     fn parse_code_block(&mut self) -> AstNode {
-        let start_line = self.peek().line;
+        // let start_line = self.peek().line;
 
-        let (code, lang) = match &self.advance().r#type {
-            TokenType::CodeBlockDelimiter { code, lang } => (code.clone(), lang.clone()),
+        let token = &self.advance();
+
+        let (code, lang, start_line, end_line, column) = match &token.r#type {
+            TokenType::CodeBlockDelimiter {
+                code,
+                lang,
+                start_line,
+                end_line,
+            } => (
+                code.clone(),
+                lang.clone(),
+                start_line.clone(),
+                end_line.clone(),
+                token.column.clone()
+            ),
             _ => unreachable!(),
         };
 
@@ -227,6 +295,8 @@ impl Parser {
             code,
             lang,
             line: start_line,
+            end_line: end_line,
+            column: column
         }
     }
 }

@@ -1,12 +1,22 @@
+use serde::{Deserialize, Serialize};
 use std::ops::Add;
 
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub enum TokenType {
-    Heading { level: u8 },
+    Heading {
+        level: u8,
+    },
     BoldDelimiter,
     ItalicDelimiter,
     SpoilerDelimiter,
     InlineCodeDelimiter,
-    CodeBlockDelimiter { code: String, lang: Option<String> },
+    CodeBlockDelimiter {
+        code: String,
+        lang: Option<String>,
+        start_line: usize,
+        end_line: usize,
+    },
     Text,
     NewLine,
     DocEnd,
@@ -185,6 +195,8 @@ impl Lexer {
                                     r#type: TokenType::CodeBlockDelimiter {
                                         code: code_lines.join("\n"),
                                         lang,
+                                        start_line: fence_line,
+                                        end_line: line_count,
                                     },
                                     value: String::new(),
                                     line: fence_line,

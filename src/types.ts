@@ -25,6 +25,7 @@ export interface Heading {
     type: "heading"
     level: number;
     line: number;
+    column: number;
     children: AstNode[];
 };
 
@@ -41,21 +42,29 @@ export interface Text {
 
 export interface Bold {
     type: "bold";
+    line: number;
+    column: number;
     children: AstNode[];
 };
 
 export interface Italic {
     type: "italic";
+    line: number;
+    column: number;
     children: AstNode[];
 };
 
 export interface Spoiler {
     type: "spoiler";
     children: AstNode[];
+    line: number;
+    column: number;
 };
 
 export interface InlineCode {
     type: "inlineCode";
+    line: number;
+    column: number;
     children: AstNode[];
 };
 
@@ -63,4 +72,7 @@ export interface CodeBlock {
     type: "codeBlock";
     code: string;
     lang: string;
+    line: number;
+    column: number;
+    endLine: number;
 };

@@ -2,6 +2,7 @@ import { AstNode, Document } from "@/types";
 import { Fragment, JSX } from "react/jsx-runtime";
 import CodeBlock from "./code-block";
 import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface EditorProps {
   content: Document | null;
@@ -9,6 +10,7 @@ interface EditorProps {
 
 function Editor(props: EditorProps) {
   const [activeLine, setActiveLine] = useState<number | null>(null);
+  const [activeColumn, setActiveColumn] = useState<number | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -19,14 +21,20 @@ function Editor(props: EditorProps) {
       let node: Node | null = sel.getRangeAt(0).startContainer;
 
       while (node && node != rootRef.current) {
-        if (node instanceof HTMLElement && node.dataset.line) {
+        if (
+          node instanceof HTMLElement &&
+          node.dataset.line &&
+          node.dataset.column
+        ) {
           setActiveLine(Number(node.dataset.line));
+          setActiveColumn(Number(node.dataset.column));
           return;
         }
         node = node.parentNode;
       }
 
       setActiveLine(null);
+      setActiveColumn(null);
     }
 
     document.addEventListener("selectionchange", updateActiveLine);
@@ -43,14 +51,20 @@ function Editor(props: EditorProps) {
         className="mx-auto w-full px-10 py-5 outline-none space-y-2"
       >
         {props.content?.children.map((node, i) => (
-          <Fragment key={i}>{renderNode(node, activeLine)}</Fragment>
+          <Fragment key={i}>
+            {renderNode(node, activeLine, activeColumn)}
+          </Fragment>
         ))}
       </div>
     </div>
   );
 }
 
-function renderNode(node: AstNode, activeLine: number | null) {
+function renderNode(
+  node: AstNode,
+  activeLine: number | null,
+  activeColumn: number | null,
+) {
   switch (node.type) {
     case "heading": {
       const isActive = node.line == activeLine;
@@ -59,40 +73,81 @@ function renderNode(node: AstNode, activeLine: number | null) {
       const HeadingTag = `h${node.level}` as keyof JSX.IntrinsicElements;
 
       return (
-        <HeadingTag data-line={node.line}>
+        <HeadingTag data-line={node.line} data-column={node.column}>
           <span className="text-muted-foreground">{isActive && hashes}</span>
-          {renderChildren(node, activeLine)}
+          {renderChildren(node, activeLine, activeColumn)}
         </HeadingTag>
       );
     }
-    case "italic":
-      return <i>{renderChildren(node, activeLine)}</i>;
-    case "bold":
-      return <b> {renderChildren(node, activeLine)}</b>;
+    case "italic": {
+      const active = node.line == activeLine && node.column == activeColumn;
+
+      return (
+        <i data-line={node.line} data-column={node.column}>
+          {active && "*"}
+          {renderChildren(node, activeLine, activeColumn)}
+          {active && "*"}
+        </i>
+      );
+    }
+    case "bold": {
+      const active = node.line == activeLine && node.column == activeColumn;
+
+      return (
+        <b data-line={node.line} data-column={node.column}>
+          {active && "**"}
+          {renderChildren(node, activeLine, activeColumn)}
+          {active && "**"}
+        </b>
+      );
+    }
     case "paragraph":
       return (
         <p data-line={node.line} className="block">
           {node.children.length == 0 ? (
             <br />
           ) : (
-            renderChildren(node, activeLine)
+            renderChildren(node, activeLine, activeColumn)
           )}
         </p>
       );
-    case "spoiler":
+    case "spoiler": {
+      const active = node.line == activeLine && node.column == activeColumn;
+
       return (
-        <span className="bg-spoiler text-transparent hover:text-primary cursor-alias p-0.5 rounded-sm">
-          {renderChildren(node, activeLine)}
+        <span
+          data-line={node.line}
+          data-column={node.column}
+          className={cn(
+            "bg-spoiler hover:text-primary cursor-alias p-0.5 rounded-sm",
+            active ? "text-primary" : "text-transparent",
+          )}
+        >
+          {active && "||"}
+          {renderChildren(node, activeLine, activeColumn)}
+          {active && "||"}
         </span>
       );
-    case "inlineCode":
+    }
+    case "inlineCode": {
+      const active = node.line == activeLine && node.column == activeColumn;
+
+      console.log(node.line)
+
       return (
-        <span className="border-2 p-0.5 rounded-sm my-2">
-          {renderChildren(node, activeLine)}
+        <span
+          data-line={node.line}
+          data-column={node.column}
+          className="border-2 p-0.5 rounded-sm my-2"
+        >
+          {active && "`"}
+          {renderChildren(node, activeLine, activeColumn)}
+          {active && "`"}
         </span>
       );
+    }
     case "codeBlock":
-      return <CodeBlock {...node} />;
+      return <CodeBlock activeLine={activeLine} {...node} />;
     case "text":
       return node.value;
   }
@@ -101,9 +156,10 @@ function renderNode(node: AstNode, activeLine: number | null) {
 function renderChildren(
   node: AstNode & { children: AstNode[] },
   line: number | null,
+  column: number | null,
 ) {
   return node.children.map((child, index) => (
-    <Fragment key={index}>{renderNode(child, line)}</Fragment>
+    <Fragment key={index}>{renderNode(child, line, column)}</Fragment>
   ));
 }
 
