@@ -10,6 +10,8 @@ export interface Tab {
     type: TabType;
     path?: string;
     name: string;
+    content: string;
+    originalContent: string;
 }
 
 interface TabState {
@@ -21,6 +23,8 @@ interface TabState {
     setTabs: (tabs: Tab[]) => void;
     ensureTab: () => void;
     setActiveTab: (tab: Tab | null) => void;
+    updateContent: (id: string, content: string) => void;
+    markSaved: (id: string) => void;
 }
 
 export const useTabStore = create<TabState>((set, get) => ({
@@ -32,10 +36,10 @@ export const useTabStore = create<TabState>((set, get) => ({
 
     },
     addNewTab: () => {
-        const tab = { id: crypto.randomUUID(), type: TabType.NEW, name: "New Tab" };
+        const tab = { id: crypto.randomUUID(), type: TabType.NEW, name: "New Tab", content: "", originalContent: "" };
         set((state) => ({ tabs: [...state.tabs, tab] }));
         get().setActiveTab(tab)
-        
+
     },
     removeTab: (id) => {
         const tab = get().tabs.find((_tab) => _tab.id == id);
@@ -58,5 +62,11 @@ export const useTabStore = create<TabState>((set, get) => ({
         }
     },
     setActiveTab: (tab: Tab | null) => set(() => ({ activeTab: tab })),
-    findTab: (id: string) => get().tabs.find((tab) => tab.id == id)
+    findTab: (id: string) => get().tabs.find((tab) => tab.id == id),
+    updateContent: (id, content) => set((state) => ({
+        tabs: state.tabs.map((t) => t.id === id ? { ...t, content } : t),
+    })),
+    markSaved: (id) => set((state) => ({
+        tabs: state.tabs.map((t) => t.id === id ? { ...t, originalContent: t.content } : t)
+    }))
 }))

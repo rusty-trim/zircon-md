@@ -1,33 +1,82 @@
-import { useEffect, useState } from "react";
+import { JSX, SVGProps, useEffect, useState } from "react";
 import { createHighlighter, type Highlighter } from "shiki";
 import { CodeBlock as CodeBlockType } from "@/types";
-import langConfig from "../../assets/lang-config.json";
+import {
+  AwkIcon,
+  BashIcon,
+  CIcon,
+  CMakeIcon,
+  CPlusPlusIcon,
+  CSharpIcon,
+  CSS3Icon,
+  GoIcon,
+  HaskellIcon,
+  HTML5Icon,
+  JavaIcon,
+  JavaScriptIcon,
+  JSONIcon,
+  LuaIcon,
+  MarkdownIcon,
+  PerlIcon,
+  PHPIcon,
+  PowerShellIcon,
+  PythonIcon,
+  ReactIcon,
+  RIcon,
+  RubyIcon,
+  RustIcon,
+  SQLIcon,
+  TypeScriptIcon,
+  XMLIcon,
+} from "../icons";
 
-const LANG_META: Record<string, { label: string; icon: string }> = {
-  "javascript": { label: "JavaScript", icon: "javascript/javascript-original" },
-  "js": { label: "JavaScript", icon: "javascript/javascript-original" },
-  "typescript": { label: "TypeScript", icon: "typescript/typescript-original" },
-  "ts": { label: "TypeScript", icon: "typescript/typescript-original" },
-  "rust": { label: "Rust", icon: "rust/rust-original" },
-  "rs": { label: "Rust", icon: "rust/rust-original" },
-  "python": { label: "Python", icon: "python/python-original" },
-  "py": { label: "Python", icon: "python/python-original" },
-  "jsx": { label: "JSX", icon: "react/react-original" },
-  "tsx": { label: "TSX", icon: "react/react-original" },
-  "go": { label: "Go", icon: "go/go-original-wordmark" },
-  "cpp": { label: "C++", icon: "cplusplus/cplusplus-original" },
-  "c++": { label: "C++", icon: "cplusplus/cplusplus-original" },
-  "c": { label: "C", icon: "c/c-original" },
-  "css": { label: "CSS", icon: "css3/css3-original" },
-  "html": { label: "HTML", icon: "html5/html5-original" },
-  "bash": { label: "Bash", icon: "bash/bash-original" },
-  "powershell": { label: "PowerShell", icon: "powershell/powershell-original" },
-  "pwsh": { label: "PowerShell", icon: "powershell/powershell-original" },
-  "json": { label: "JSON", icon: "json/json-original" },
-  "xml": { label: "XML", icon: "xml/xml-original" },
+const LANG_META: Record<
+  string,
+  { label: string; icon: (props: SVGProps<SVGSVGElement>) => JSX.Element }
+> = {
+  awk: { label: "AWK", icon: AwkIcon },
+  bash: { label: "Bash", icon: BashIcon },
+  c: { label: "C", icon: CIcon },
+  cpp: { label: "C++", icon: CPlusPlusIcon },
+  "c++": { label: "C++", icon: CPlusPlusIcon },
+  cmake: { label: "CMake", icon: CMakeIcon },
+  csharp: { label: "C#", icon: CSharpIcon },
+  cs: { label: "C#", icon: CSharpIcon },
+  "c#": { label: "C#", icon: CSharpIcon },
+  css: { label: "CSS", icon: CSS3Icon },
+  haskell: { label: "Haskell", icon: HaskellIcon },
+  hs: { label: "Haskell", icon: HaskellIcon },
+  java: { label: "Java", icon: JavaIcon },
+  javascript: { label: "JavaScript", icon: JavaScriptIcon },
+  js: { label: "JavaScript", icon: JavaScriptIcon },
+  cjs: { label: "JavaScript", icon: JavaScriptIcon },
+  mjs: { label: "JavaScript", icon: JavaScriptIcon },
+  jsx: { label: "JSX", icon: ReactIcon },
+  json: { label: "JSON", icon: JSONIcon },
+  lua: { label: "Lua", icon: LuaIcon },
+  markdown: { label: "Markdown", icon: MarkdownIcon },
+  md: { label: "Markdown", icon: MarkdownIcon },
+  perl: { label: "Perl", icon: PerlIcon },
+  php: { label: "PHP", icon: PHPIcon },
+  powershell: { label: "PowerShell", icon: PowerShellIcon },
+  ps: { label: "PowerShell", icon: PowerShellIcon },
+  ps1: { label: "PowerShell", icon: PowerShellIcon },
+  pwsh: { label: "PowerShell", icon: PowerShellIcon },
+  python: { label: "Python", icon: PythonIcon },
+  py: { label: "Python", icon: PythonIcon },
+  r: { label: "R", icon: RIcon },
+  ruby: { label: "Ruby", icon: RubyIcon },
+  rb: { label: "Ruby", icon: RubyIcon },
+  rust: { label: "Rust", icon: RustIcon },
+  rs: { label: "Rust", icon: RustIcon },
+  sql: { label: "SQL", icon: SQLIcon },
+  tsx: { label: "TSX", icon: ReactIcon },
+  typescript: { label: "TypeScript", icon: TypeScriptIcon },
+  ts: { label: "TypeScript", icon: TypeScriptIcon },
+  go: { label: "Go", icon: GoIcon },
+  html: { label: "HTML", icon: HTML5Icon },
+  xml: { label: "XML", icon: XMLIcon },
 };
-
-const DEVICON_BASE = "https://cdn.jsdelivr.net/gh/devicons/devicon/icons";
 
 let highlighterPromise: Promise<Highlighter> | null = null;
 function getHighlighter() {
@@ -40,18 +89,11 @@ function getHighlighter() {
   return highlighterPromise;
 }
 
-function CodeBlockHeader({
-  active,
-  lang,
-}: {
-  active: boolean;
-  lang: string;
-  validLang: { theme: string; label: string };
-}) {
+function CodeBlockHeader({ active, lang }: { active: boolean; lang: string }) {
   const key = lang.toLowerCase();
   const meta = LANG_META[key];
   const label = meta?.label ?? lang;
-  const iconUrl = meta?.icon ? `${DEVICON_BASE}/${meta.icon}.svg` : null;
+  const Icon = meta.icon;
 
   return (
     <>
@@ -62,8 +104,8 @@ function CodeBlockHeader({
         </div>
       ) : (
         <div className="flex items-center gap-2 px-3 py-2 border-b">
-          {iconUrl ? (
-            <img src={iconUrl} alt={label} className="size-4.5 shrink-0" />
+          {meta ? (
+            <Icon className="size-4.5 shrink-0 text-accent-foreground" />
           ) : (
             <span></span>
           )}
@@ -149,9 +191,6 @@ export default function CodeBlock(
     };
   }, [props.code, props.lang]);
 
-  const validLang =
-    langConfig[props.lang.toLowerCase() as keyof typeof langConfig];
-
   return (
     <div
       data-line={props.line}
@@ -159,7 +198,7 @@ export default function CodeBlock(
       spellCheck="false"
       className="relative group my-6 rounded-lg border border-white/6 bg-[#24292e] overflow-hidden shadow-md"
     >
-      <CodeBlockHeader active={active} lang={props.lang} validLang={validLang} />
+      <CodeBlockHeader active={active} lang={props.lang} />
       <CodeBlockContent active={active} html={html} code={props.code} />
     </div>
   );

@@ -114,6 +114,14 @@ pub fn save_settings(app: AppHandle, settings: Settings) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn save_file_content(_app: AppHandle, file_path: String, content: String) -> Result<(), String> {
+    let path = PathBuf::from(&file_path);
+    let tmp_path = path.with_extension("tmp");
+    fs::write(&tmp_path, &content).map_err(|e| format!("Failed to write temp file: {e}"))?;
+    fs::rename(&tmp_path, &path).map_err(|e| format!("Failed to rename temp file: {e}"))
+}
+
+#[tauri::command]
 pub fn load_session(app: AppHandle) -> Result<Session, String> {
     let path = app_data_dir(&app)?.join(SESSION_FILE);
     let raw = fs::read_to_string(&path).map_err(|e| format!("Failed to read settings: {e}"))?;

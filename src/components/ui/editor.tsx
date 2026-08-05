@@ -1,8 +1,8 @@
+import { cn } from "@/lib/utils";
 import { AstNode, Document } from "@/types";
+import { useEffect, useRef, useState } from "react";
 import { Fragment, JSX } from "react/jsx-runtime";
 import CodeBlock from "./code-block";
-import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
 
 interface EditorProps {
   content: Document | null;
@@ -164,3 +164,4 @@ function renderChildren(
 }
 
 export { Editor };
+
