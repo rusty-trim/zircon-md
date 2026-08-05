@@ -1,12 +1,3 @@
-// pub enum AstNode {
-//     Document { children: Vec<AstNode> },
-//     Heading { level: u8, children: Vec<AstNode> },
-//     Paragraph { children: Vec<AstNode> },
-//     Text(String),
-//     Bold { children: Vec<AstNode> },
-//     Italic { children: Vec<AstNode> },
-// }
-
 export type AstNode =
     | Heading
     | Paragraph
